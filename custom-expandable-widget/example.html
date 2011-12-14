@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Custom expandable widget example</title>
+<style>
+/* page styles */
+body {margin: 0;padding: 0;font-family: Verdana, sans-serif;font-size: 14px;}
+.links {width:960px;margin: 2em auto;}
+
+/* customizable styles for the widget button and close button */
+.donate-widget-link
+{
+	display:block;
+	text-align:center;
+	width:80px;
+	padding: 0.5em;
+	border: 1px solid #00f;
+	color: #00f;
+	text-decoration: none;
+	background-color: #eef;
+}
+.donate-widget-close
+{
+	width: 16px;
+	height: 16px;
+	border-radius: 10px;
+	border: 2px solid #900;
+	background-color: #fff;
+}
+.donate-widget-close:hover
+{
+	background-color: #fcc;
+}
+.donate-widget-close:before
+{
+	position: absolute;
+	content: "x";
+	z-index: 101;
+}
+
+</style>
+</head>
+<body>
+
+<div class="links">
+	<a href="http://www.ammado.com/donate?106601" class="donate-widget-link" style="float:right;">Donate on the right</a>
+	<a href="http://www.ammado.com/donate?106601" class="donate-widget-link" style="float:left;">Donate on the left</a>
+	<a href="http://www.ammado.com/donate?106601" class="donate-widget-link" style="margin: 0 auto;">Donate in the middle</a>
+</div>
+	
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>
+$(function(){
+	
+	$('.donate-widget-link').live('click', function(e)
+	{
+		// cancel default action - don't leave this page
+		e.preventDefault();
+	
+		// widget source is https://www.ammado.com/[YOUR PERMALINK URL]/givingwidget
+		var widgetSrc = "https://www.ammado.com/member/47813/givingwidget"
+		
+		// create the iframe element and set some default styles for it
+		var iframe = $('<iframe src="'+widgetSrc+'" scrolling="no" width="0" height="0" frameborder="0" marginwidth="0" marginheight="0" hspace="0" vspace="0" allowtransparency="true" style="background-color:#fff;border:1px solid #ccc;overflow:hidden;position:absolute;z-index:99;"></iframe>');
+		
+		// get the position and size of the clicked element - we'll need this to calculate
+		// the position and direction of the widget
+		var pos = $(this).offset();
+		var w = $(this).outerWidth();
+		var screenX = $(window).width();
+		
+		// if the element is on the right side - pin the widget to its right corner, otherwise - stick to the left corner
+		var hPosProperty = pos.left > screenX/2 ? 'right' : 'left';
+		var hPosValue = pos.left > screenX/2 ? screenX - pos.left - w : pos.left;
+		
+		// just something to make things pretier - the light will shine from the close link, meaning that
+		// the shadow falls towards the left, when the widget is pinned to the right and vice versa
+		var shadow = pos.left > screenX/2 ? '-2px 2px 6px rgba(0, 0, 0, 0.3)' : '2px 2px 6px rgba(0, 0, 0, 0.3)';
+		
+		iframe
+			.css('box-shadow', shadow) // light source is the close link
+			.css('top', pos.top+'px') // align top with the clicked element
+			.css(hPosProperty, hPosValue); // align left to left, or right to right
+
+		// create close link - this only sets some default properties and is styleable via .donate-widget-close
+		var closeLink = $('<a href="#" class="donate-widget-close">Close</a>');
+		closeLink
+			.css('text-indent', '-9999px') // hide the text in an accessible fashion
+			.css('position', 'absolute')
+			.css('z-index', '100') // position above the widget (which is z-index 99)
+			.appendTo(document.body); // add to the body, because otherwise the link has no dimensions
+		
+		// now that we have the dimensions of the link, we can align it's centre point with the widget's corner
+		// if the widget is on the right - align to the top-right corner, otherwise - top-left.
+		// you may change these options to make the close link appear below or above the widget
+		closeLink
+			.css('top', (pos.top-closeLink.outerHeight()/2)+'px')
+			.css(hPosProperty, (hPosValue-closeLink.outerWidth()/2)+'px');
+		
+		// now that everything is set up, we may add our widget iframe to the body and animate
+		iframe
+			.appendTo(document.body)
+			.animate(
+				{
+					// this is the standard size of the ammado widget
+					width:320,
+					height:436
+				},
+				{
+					// make it quick, otherwise it will be annoying...
+					duration:'fast'
+				});
+		
+		// we also need a click handler for the close link
+		closeLink.click(function(e){
+			e.preventDefault();
+			iframe.animate(
+				{
+					// collapse the widget to 0 size
+					width:0,
+					height:0
+				},
+				{
+					duration:'fast',
+					// once animation completes - let's cleanup after ourselves - remove the widget and the link from the DOM
+					complete: function(){
+						iframe.remove();
+						closeLink.remove();
+					}
+				});
+		});
+	});
+	
+});
+</script>
+
+</body>
