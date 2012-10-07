@@ -8,6 +8,7 @@
 		return $m[1];
 	}
 	
+	define('API_VERSION', 'v1');
 	function parseApiEndpointFromWidgetCode($widgetCode)
 	{
 		$widgetUrl = parseWidgetUrlFromWidgetCode($widgetCode);

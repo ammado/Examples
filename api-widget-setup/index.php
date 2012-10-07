@@ -1,6 +1,4 @@
 <?
-	define('API_VERSION', 'v1');
-	
 	session_start();
 	
 	require_once('config.php');
